@@ -1,0 +1,97 @@
+<%- include('partials/header', { title: '首页' }) %>
+
+<!-- ====== 海报轮播 ====== -->
+<section class="hero-carousel">
+  <div class="carousel-container">
+    <% if (posters.length === 0) { %>
+    <div class="carousel-slide active">
+      <div class="slide-content" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+        <div class="slide-overlay">
+          <h2><%= site.name %></h2>
+          <p><%= site.subtitle %></p>
+        </div>
+      </div>
+    </div>
+    <% } %>
+    <% posters.forEach((poster, i) => { %>
+    <div class="carousel-slide <%= i === 0 ? 'active' : '' %>" data-index="<%= i %>">
+      <a href="<%= poster.link %>">
+        <div class="slide-content" style="background-image: url('<%= poster.image_path %>');">
+          <div class="slide-overlay">
+            <h2><%= poster.title %></h2>
+          </div>
+        </div>
+      </a>
+    </div>
+    <% }) %>
+    <% if (posters.length > 1) { %>
+    <button class="carousel-btn prev" onclick="changeSlide(-1)">&#10094;</button>
+    <button class="carousel-btn next" onclick="changeSlide(1)">&#10095;</button>
+    <div class="carousel-dots">
+      <% posters.forEach((_, i) => { %>
+      <span class="dot <%= i === 0 ? 'active' : '' %>" onclick="goToSlide(<%= i %>)"></span>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</section>
+
+<!-- ====== 品牌介绍 ====== -->
+<section class="brand-intro">
+  <div class="container">
+    <h2 class="section-title">匠心传承 · 璀璨人生</h2>
+    <p class="brand-text"><%= site.site_about %></p>
+  </div>
+</section>
+
+<!-- ====== 精选臻品 ====== -->
+<section class="featured-products">
+  <div class="container">
+    <h2 class="section-title">精选臻品</h2>
+    <div class="product-grid">
+      <% featured.forEach(p => { %>
+      <div class="product-card">
+        <a href="/product/<%= p.id %>">
+          <div class="product-image">
+            <div class="img-placeholder" data-cat="<%= p.category %>">
+              <span class="img-label"><%= p.category %></span>
+            </div>
+            <% if (p.original_price > p.price) { %>
+            <span class="badge-sale">限时优惠</span>
+            <% } %>
+          </div>
+          <div class="product-info">
+            <h3><%= p.name %></h3>
+            <p class="product-desc"><%= p.description.substring(0, 35) %>...</p>
+            <div class="product-price">
+              <span class="price-current">¥<%= p.price.toLocaleString() %></span>
+              <% if (p.original_price > p.price) { %>
+              <span class="price-original">¥<%= p.original_price.toLocaleString() %></span>
+              <% } %>
+            </div>
+          </div>
+        </a>
+      </div>
+      <% }) %>
+    </div>
+    <div class="text-center mt-40">
+      <a href="/products" class="btn-gold">查看全部产品 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 产品分类 ====== -->
+<section class="category-section">
+  <div class="container">
+    <h2 class="section-title">产品分类</h2>
+    <div class="category-grid">
+      <% categories.forEach(cat => { %>
+      <a href="/products?category=<%= encodeURIComponent(cat) %>" class="category-card">
+        <span class="cat-name"><%= cat %></span>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

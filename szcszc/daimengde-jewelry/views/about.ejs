@@ -1,0 +1,34 @@
+<%- include('partials/header', { title: '关于我们' }) %>
+
+<section class="about-page">
+  <div class="container">
+    <h1 class="section-title">关于我们</h1>
+    <div class="about-grid">
+      <div class="about-text">
+        <h3>蓬莱振华 · 戴梦得珠宝专柜</h3>
+        <p><%= site.site_about %></p>
+        <br>
+        <h4>品牌使命</h4>
+        <p>戴梦得珠宝致力于将东方美学与现代珠宝设计完美融合，为蓬莱及周边地区的顾客打造独一无二的璀璨时刻。我们相信，每一件珠宝都承载着情感与记忆，是人生重要时刻的见证者。</p>
+        <br>
+        <h4>品质保障</h4>
+        <p>所有产品均采用天然宝石与贵金属材质，由资深工匠手工打造。我们提供完善的检测证书与售后服务，让您购买无忧。</p>
+        <br>
+        <h4>门店地址</h4>
+        <p>蓬莱市振华商厦一层 · 戴梦得珠宝专柜<br>营业时间：9:00 - 21:00</p>
+      </div>
+      <div class="about-sidebar">
+        <div class="about-card">
+          <h4>联系方式</h4>
+          <p><%= site.site_contact %></p>
+        </div>
+        <div class="about-card">
+          <h4>售后服务</h4>
+          <p>免费清洗保养<br>终身维修服务<br>以旧换新活动</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

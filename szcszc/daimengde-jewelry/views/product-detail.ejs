@@ -1,0 +1,62 @@
+<%- include('partials/header', { title: product.name }) %>
+
+<section class="detail-page">
+  <div class="container">
+    <div class="detail-grid">
+      <div class="detail-image">
+        <div class="img-placeholder large" data-cat="<%= product.category %>">
+          <span class="img-label"><%= product.category %></span>
+        </div>
+      </div>
+      <div class="detail-info">
+        <p class="detail-cat"><%= product.category %></p>
+        <h1><%= product.name %></h1>
+        <p class="detail-desc"><%= product.description %></p>
+        <div class="detail-price">
+          <% if (product.original_price > product.price) { %>
+          <span class="price-current large">¥<%= product.price.toLocaleString() %></span>
+          <span class="price-original">¥<%= product.original_price.toLocaleString() %></span>
+          <span class="tag-discount">省 ¥<%= (product.original_price - product.price).toLocaleString() %></span>
+          <% } else { %>
+          <span class="price-current large">¥<%= product.price.toLocaleString() %></span>
+          <% } %>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-gold" onclick="alert('感谢关注！欢迎莅临蓬莱振华商厦一楼戴梦得专柜选购。\n专柜电话：0535-5668888')">立即咨询</button>
+          <button class="btn-outline" onclick="history.back()">返回</button>
+        </div>
+        <div class="detail-meta">
+          <p>📍 蓬莱振华商厦一楼戴梦得珠宝专柜</p>
+          <p>📞 0535-5668888</p>
+        </div>
+      </div>
+    </div>
+
+    <% if (related.length > 0) { %>
+    <div class="related-section">
+      <h2 class="section-title">相关推荐</h2>
+      <div class="product-grid">
+        <% related.forEach(rp => { %>
+        <div class="product-card">
+          <a href="/product/<%= rp.id %>">
+            <div class="product-image">
+              <div class="img-placeholder" data-cat="<%= rp.category %>">
+                <span class="img-label"><%= rp.category %></span>
+              </div>
+            </div>
+            <div class="product-info">
+              <h3><%= rp.name %></h3>
+              <div class="product-price">
+                <span class="price-current">¥<%= rp.price.toLocaleString() %></span>
+              </div>
+            </div>
+          </a>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

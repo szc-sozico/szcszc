@@ -1,0 +1,27 @@
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h3><%= site.name %></h3>
+          <p><%= site.site_about || '' %></p>
+        </div>
+        <div class="footer-col">
+          <h3>快速导航</h3>
+          <a href="/">首页</a>
+          <a href="/products">全部产品</a>
+          <a href="/about">关于我们</a>
+        </div>
+        <div class="footer-col">
+          <h3>联系我们</h3>
+          <p><%= site.site_contact || '' %></p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p><%= site.site_footer || '© 2024 戴梦得珠宝' %></p>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

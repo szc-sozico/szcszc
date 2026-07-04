@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 - <%= site.name %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="admin-wrap">
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <h1>💎 <%= site.name %> · 管理后台</h1>
+      <div class="admin-header-right">
+        <span>👤 <%= session.adminUsername %></span>
+        <form action="/admin/rebuild" method="POST" style="display:inline">
+          <button class="btn-sm" title="手动重建所有静态HTML文件">🔄 重建站点</button>
+        </form>
+        <a href="/" target="_blank" class="btn-sm">预览网站</a>
+        <a href="/admin/logout" class="btn-sm btn-outline-danger">退出</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-body">
+    <% if (typeof msg !== 'undefined' && msg) { %>
+    <div class="admin-toast success" id="toast"><%= msg %></div>
+    <% } %>
+    <% if (typeof err !== 'undefined' && err) { %>
+    <div class="admin-toast error" id="toast"><%= err %></div>
+    <% } %>
+
+    <div class="info-banner">
+      ⚡ 静态网站模式：每次修改数据后自动重新生成所有 HTML 文件到 <code>public/</code> 目录
+    </div>
+
+    <div class="admin-tabs" id="tabs">
+      <button class="tab-btn active" data-tab="posters">📸 海报管理</button>
+      <button class="tab-btn" data-tab="products">💍 产品管理</button>
+      <button class="tab-btn" data-tab="settings">⚙️ 站点设置</button>
+      <button class="tab-btn" data-tab="password">🔒 修改密码</button>
+    </div>
+
+    <!-- ===== 海报管理 ===== -->
+    <div class="tab-panel active" id="tab-posters">
+      <div class="panel-section">
+        <h2>上传新海报</h2>
+        <form action="/admin/poster/add" method="POST" enctype="multipart/form-data" class="form-card">
+          <div class="form-row">
+            <div class="form-group flex-2"><label>海报标题</label><input type="text" name="title" placeholder="例：夏日璀璨新品发布" required></div>
+            <div class="form-group flex-2"><label>点击跳转链接</label><input type="text" name="link" value="#products"></div>
+            <div class="form-group flex-1"><label>排序号</label><input type="number" name="sort_order" value="99" min="1"></div>
+          </div>
+          <div class="form-group"><label>选择图片（JPG/PNG/GIF/WEBP，最大20MB）</label><input type="file" name="image" accept="image/*" required></div>
+          <button type="submit" class="btn-gold">📤 上传海报</button>
+        </form>
+      </div>
+
+      <div class="panel-section">
+        <h2>海报列表（<%= posters.length %> 张）</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th style="width:160px">预览</th><th>标题</th><th style="width:60px">排序</th><th style="width:80px">状态</th><th style="width:220px">操作</th></tr></thead>
+            <tbody>
+              <% posters.forEach(p => { %>
+              <tr>
+                <td><img src="<%= p.image_path %>" alt="<%= p.title %>" class="table-thumb"></td>
+                <td><strong><%= p.title %></strong></td>
+                <td><%= p.sort_order %></td>
+                <td>
+                  <form action="/admin/poster/toggle/<%= p.id %>" method="POST">
+                    <button class="btn-sm <%= p.active ? 'btn-green' : 'btn-gray' %>"><%= p.active ? '显示' : '隐藏' %></button>
+                  </form>
+                </td>
+                <td class="actions-cell">
+                  <button class="btn-sm" onclick="openPosterEdit(<%= p.id %>, '<%= p.title.replace(/'/g, "\\'") %>', '<%= p.link %>', <%= p.sort_order %>)">✏️ 编辑</button>
+                  <button class="btn-sm" onclick="openPosterImage(<%= p.id %>)">🖼 换图</button>
+                  <form action="/admin/poster/delete/<%= p.id %>" method="POST" style="display:inline" onsubmit="return confirm('确定删除？')">
+                    <button class="btn-sm btn-red">🗑 删除</button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+              <% if (posters.length === 0) { %><tr><td colspan="5" class="empty-cell">暂无海报</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 产品管理 ===== -->
+    <div class="tab-panel" id="tab-products">
+      <div class="panel-section">
+        <h2>添加新产品</h2>
+        <form action="/admin/product/add" method="POST" class="form-card">
+          <div class="form-row">
+            <div class="form-group flex-2"><label>产品名称 *</label><input type="text" name="name" placeholder="例：星月交辉 钻石项链" required></div>
+            <div class="form-group flex-2"><label>分类 *</label><select name="category" required><option value="">选择分类</option><% ['项链','戒指','手链','手镯','耳饰','胸针','头饰'].forEach(c => { %><option value="<%= c %>"><%= c %></option><% }) %></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-2"><label>售价 ¥ *</label><input type="number" name="price" placeholder="12800" step="0.01" required></div>
+            <div class="form-group flex-2"><label>原价 ¥</label><input type="number" name="original_price" placeholder="16800" step="0.01"></div>
+          </div>
+          <div class="form-group"><label>描述</label><textarea name="description" rows="2" placeholder="材质、工艺、特点..."></textarea></div>
+          <div class="form-group"><label><input type="checkbox" name="featured" checked> 首页精选展示</label></div>
+          <button type="submit" class="btn-gold">➕ 添加产品</button>
+        </form>
+      </div>
+
+      <div class="panel-section">
+        <h2>产品列表（<%= products.length %> 件）</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>名称</th><th>分类</th><th>售价</th><th>原价</th><th>精选</th><th>操作</th></tr></thead>
+            <tbody>
+              <% products.forEach(p => { %>
+              <tr>
+                <td><%= p.id %></td><td><strong><%= p.name %></strong></td><td><%= p.category %></td>
+                <td class="price-cell">¥<%= p.price.toLocaleString() %></td>
+                <td><%= p.original_price > p.price ? '¥'+p.original_price.toLocaleString() : '-' %></td>
+                <td><%= p.featured ? '⭐' : '-' %></td>
+                <td class="actions-cell">
+                  <button class="btn-sm" onclick="openProductEdit(<%= p.id %>, '<%= p.name.replace(/'/g, "\\'") %>', '<%= p.category %>', <%= p.price %>, <%= p.original_price %>, '<%= (p.description||'').replace(/'/g, "\\'") %>', <%= p.featured %>)">✏️ 编辑</button>
+                  <form action="/admin/product/delete/<%= p.id %>" method="POST" style="display:inline" onsubmit="return confirm('确定删除？')"><button class="btn-sm btn-red">🗑 删除</button></form>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 站点设置 ===== -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="panel-section">
+        <h2>站点信息</h2>
+        <form action="/admin/site/update" method="POST" class="form-card">
+          <div class="form-group"><label>网站名称</label><input type="text" name="site_name" value="<%= site.site_name || '' %>" required></div>
+          <div class="form-group"><label>副标题</label><input type="text" name="site_subtitle" value="<%= site.site_subtitle || '' %>"></div>
+          <div class="form-group"><label>品牌介绍</label><textarea name="site_about" rows="4"><%= site.site_about || '' %></textarea></div>
+          <div class="form-group"><label>联系信息</label><input type="text" name="site_contact" value="<%= site.site_contact || '' %>"></div>
+          <div class="form-group"><label>页脚版权</label><input type="text" name="site_footer" value="<%= site.site_footer || '' %>"></div>
+          <button type="submit" class="btn-gold">💾 保存并重建站点</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== 修改密码 ===== -->
+    <div class="tab-panel" id="tab-password">
+      <div class="panel-section">
+        <h2>修改密码</h2>
+        <form action="/admin/change-password" method="POST" class="form-card" style="max-width:440px">
+          <div class="form-group"><label>当前密码</label><input type="password" name="old_password" required></div>
+          <div class="form-group"><label>新密码（≥6位）</label><input type="password" name="new_password" required minlength="6"></div>
+          <div class="form-group"><label>确认新密码</label><input type="password" name="confirm_password" required minlength="6"></div>
+          <button type="submit" class="btn-gold">🔒 修改密码</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="posterEditModal" class="overlay" style="display:none"><div class="modal-box">
+  <h3>编辑海报</h3>
+  <form id="posterEditForm" method="POST">
+    <div class="form-group"><label>标题</label><input type="text" name="title" id="peTitle" required></div>
+    <div class="form-group"><label>链接</label><input type="text" name="link" id="peLink"></div>
+    <div class="form-group"><label>排序号</label><input type="number" name="sort_order" id="peOrder" min="1"></div>
+    <button type="submit" class="btn-gold">保存</button>
+    <button type="button" class="btn-outline" onclick="closeModal('posterEditModal')">取消</button>
+  </form>
+</div></div>
+
+<div id="posterImageModal" class="overlay" style="display:none"><div class="modal-box">
+  <h3>替换图片</h3>
+  <form id="posterImageForm" method="POST" enctype="multipart/form-data">
+    <div class="form-group"><label>新图片</label><input type="file" name="image" accept="image/*" required></div>
+    <button type="submit" class="btn-gold">替换</button>
+    <button type="button" class="btn-outline" onclick="closeModal('posterImageModal')">取消</button>
+  </form>
+</div></div>
+
+<div id="productEditModal" class="overlay" style="display:none"><div class="modal-box modal-lg">
+  <h3>编辑产品</h3>
+  <form id="productEditForm" method="POST">
+    <div class="form-row"><div class="form-group flex-2"><label>名称</label><input type="text" name="name" id="prName" required></div><div class="form-group flex-2"><label>分类</label><select name="category" id="prCategory" required><% ['项链','戒指','手链','手镯','耳饰','胸针','头饰'].forEach(c => { %><option value="<%= c %>"><%= c %></option><% }) %></select></div></div>
+    <div class="form-row"><div class="form-group flex-2"><label>售价 ¥</label><input type="number" name="price" id="prPrice" step="0.01" required></div><div class="form-group flex-2"><label>原价 ¥</label><input type="number" name="original_price" id="prOrigPrice" step="0.01"></div></div>
+    <div class="form-group"><label>描述</label><textarea name="description" id="prDesc" rows="2"></textarea></div>
+    <div class="form-group"><label><input type="checkbox" name="featured" id="prFeatured"> 首页精选</label></div>
+    <button type="submit" class="btn-gold">保存</button>
+    <button type="button" class="btn-outline" onclick="closeModal('productEditModal')">取消</button>
+  </form>
+</div></div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+    history.replaceState(null, '', '#' + this.dataset.tab);
+  });
+});
+var hash = location.hash.replace('#tab-', '');
+if (hash) { var b = document.querySelector('[data-tab="' + hash + '"]'); if (b) b.click(); }
+
+function openPosterEdit(id, title, link, order) {
+  document.getElementById('peTitle').value = title;
+  document.getElementById('peLink').value = link;
+  document.getElementById('peOrder').value = order;
+  document.getElementById('posterEditForm').action = '/admin/poster/edit/' + id;
+  document.getElementById('posterEditModal').style.display = 'flex';
+}
+function openPosterImage(id) {
+  document.getElementById('posterImageForm').action = '/admin/poster/replace-image/' + id;
+  document.getElementById('posterImageModal').style.display = 'flex';
+}
+function openProductEdit(id, name, cat, price, orig, desc, feat) {
+  document.getElementById('prName').value = name;
+  document.getElementById('prCategory').value = cat;
+  document.getElementById('prPrice').value = price;
+  document.getElementById('prOrigPrice').value = orig;
+  document.getElementById('prDesc').value = desc;
+  document.getElementById('prFeatured').checked = feat;
+  document.getElementById('productEditForm').action = '/admin/product/edit/' + id;
+  document.getElementById('productEditModal').style.display = 'flex';
+}
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelectorAll('.overlay').forEach(ov => { ov.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; }); });
+setTimeout(function() { var t = document.getElementById('toast'); if (t) { t.style.opacity = '0'; setTimeout(function() { if (t) t.remove(); }, 500); } }, 4000);
+</script>
+</body>
+</html>

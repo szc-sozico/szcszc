@@ -1,0 +1,7 @@
+<%- include('partials/header', { title: '出错了' }) %>
+<section style="text-align:center;padding:100px 20px;min-height:50vh;">
+  <div style="font-size:60px;color:#c9a96e;font-family:'Noto Serif SC',serif;">500</div>
+  <p style="font-size:18px;color:#666;margin:20px 0;"><%= typeof message !== 'undefined' ? message : '服务器内部错误' %></p>
+  <a href="/" class="btn-gold">返回首页</a>
+</section>
+<%- include('partials/footer') %>
